@@ -157,7 +157,10 @@ const LanguageSelect = () => {
           {languages.map((language) => {
             const isActive = language.locale === locale;
             return (
-              <button onClick={() => handleClick(language.locale)}>
+              <button
+                key={language.locale}
+                onClick={() => handleClick(language.locale)}
+              >
                 {language.name}
                 {isActive && <span>&#10003;</span>}
               </button>
