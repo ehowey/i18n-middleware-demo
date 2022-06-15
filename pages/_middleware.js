@@ -43,6 +43,11 @@ export const middleware = (request) => {
       return undefined;
     }
 
+    // Early return if this is an next image route
+    if (nextUrl.pathname.includes("/_next/image")) {
+      return undefined;
+    }
+
     // Early return if there is a cookie present and on default locale
     if (cookies.NEXT_LOCALE && nextUrl.locale === "default") {
       url.pathname = `/${cookies.NEXT_LOCALE}${nextUrl.pathname}`;
