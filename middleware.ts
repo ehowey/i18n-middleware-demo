@@ -55,17 +55,6 @@ export async function middleware(req: NextRequest) {
     // No cookie that we need to deal with
     // User has to be on default locale
 
-    if (req.nextUrl.locale === "default") {
-      const locale = req.cookies.get("NEXT_LOCALE")?.value || "en";
-
-      return NextResponse.redirect(
-        new URL(
-          `/${locale}${req.nextUrl.pathname}${req.nextUrl.search}`,
-          req.url
-        )
-      );
-    }
-
     // Redirect All France
     if (country === "fr") {
       return NextResponse.redirect(
