@@ -1,103 +1,113 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // Regex to check whether something has an extension, e.g. .jpg
 const PUBLIC_FILE = /\.(.*)$/;
 
-// Next JS Middleware
-export const middleware = (request) => {
-  // Get the information we need from the request object
-  const { nextUrl, geo, headers, cookies } = request;
-  // Cloned url to work with
-  const url = nextUrl.clone();
+export async function middleware(req: NextRequest) {
+  // Cookie locale
+  const cookieLocale = req.cookies.get("NEXT_LOCALE")?.value;
+
   // Client country, defaults to us
-  const country = geo?.country?.toLowerCase() || "us";
+  const country = req.geo?.country?.toLowerCase() || "us";
+
   // Client language, defaults to en
   const language =
-    headers
+    req.headers
       .get("accept-language")
       ?.split(",")?.[0]
       .split("-")?.[0]
       .toLowerCase() || "en";
-
-  // // Helpful console.log for debugging
-  // console.log({
-  //   nextLocale: nextUrl.locale,
-  //   pathname: nextUrl.pathname,
-  //   cookie: cookies.NEXT_LOCALE,
-  //   clientCountry: country,
-  //   clientLanguage: language,
-  // });
-
   try {
-    // Early return if it is a public file such as an image
-    if (PUBLIC_FILE.test(nextUrl.pathname)) {
-      return undefined;
-    }
-    // Early return if this is an api route
-    if (nextUrl.pathname.includes("/api")) {
-      return undefined;
+    // Early return if we do not need to or want to run middleware
+    if (
+      req.nextUrl.pathname.startsWith("/_next") ||
+      req.nextUrl.pathname.includes("/api/") ||
+      PUBLIC_FILE.test(req.nextUrl.pathname)
+    ) {
+      return;
     }
 
     // Early return if we are on a locale other than default
-    if (nextUrl.locale !== "default") {
-      return undefined;
+    if (req.nextUrl.locale !== "default") {
+      return;
     }
 
     // Early return if there is a cookie present and on default locale
-    if (cookies.NEXT_LOCALE && nextUrl.locale === "default") {
-      url.pathname = `/${cookies.NEXT_LOCALE}${nextUrl.pathname}`;
-      return NextResponse.redirect(url);
+    // We can redirect right away to the value of the cookie
+    // Still falls back to en just in case
+    if (cookieLocale && req.nextUrl.locale === "default") {
+      return NextResponse.redirect(
+        new URL(
+          `/${cookieLocale}${req.nextUrl.pathname}${req.nextUrl.search}`,
+          req.url
+        )
+      );
     }
 
     // We now know:
     // No cookie that we need to deal with
     // User has to be on default locale
 
+    if (req.nextUrl.locale === "default") {
+      const locale = req.cookies.get("NEXT_LOCALE")?.value || "en";
+
+      return NextResponse.redirect(
+        new URL(
+          `/${locale}${req.nextUrl.pathname}${req.nextUrl.search}`,
+          req.url
+        )
+      );
+    }
+
     // Redirect All France
     if (country === "fr") {
-      url.pathname = `/fr-fr${nextUrl.pathname}`;
-      return NextResponse.redirect(url);
+      return NextResponse.redirect(
+        new URL(`/fr-fr${req.nextUrl.pathname}${req.nextUrl.search}`, req.url)
+      );
     }
 
     // Redirect All Belgium
     if (country === "be") {
-      url.pathname = `/fr-be${nextUrl.pathname}`;
-      return NextResponse.redirect(url);
+      return NextResponse.redirect(
+        new URL(`/fr-be${req.nextUrl.pathname}${req.nextUrl.search}`, req.url)
+      );
     }
 
     // Redirect all Great Britain
     if (country === "gb") {
-      url.pathname = `/en-gb${nextUrl.pathname}`;
-      return NextResponse.redirect(url);
+      return NextResponse.redirect(
+        new URL(`/en-gb${req.nextUrl.pathname}${req.nextUrl.search}`, req.url)
+      );
     }
 
     // Redirect French-Canada
     if (country === "ca" && language === "fr") {
-      url.pathname = `/fr-ca${nextUrl.pathname}`;
-      return NextResponse.redirect(url);
+      return NextResponse.redirect(
+        new URL(`/fr-ca${req.nextUrl.pathname}${req.nextUrl.search}`, req.url)
+      );
     }
 
     // Redirect all other Canadian requests
     if (country === "ca") {
-      url.pathname = `/en-ca${nextUrl.pathname}`;
-      return NextResponse.redirect(url);
+      return NextResponse.redirect(
+        new URL(`/en-ca${req.nextUrl.pathname}${req.nextUrl.search}`, req.url)
+      );
     }
 
     // Handle French language fallback
     if (language === "fr") {
-      url.pathname = `/fr${nextUrl.pathname}`;
-      return NextResponse.redirect(url);
+      return NextResponse.redirect(
+        new URL(`/fr${req.nextUrl.pathname}${req.nextUrl.search}`, req.url)
+      );
     }
 
     // Handle the default locale fallback to english
-    if (nextUrl.locale === "default") {
-      url.pathname = `/en${nextUrl.pathname}`;
-      return NextResponse.redirect(url);
+    if (req.nextUrl.locale === "default") {
+      return NextResponse.redirect(
+        new URL(`/en${req.nextUrl.pathname}${req.nextUrl.search}`, req.url)
+      );
     }
-
-    // If everything else falls through continue on with response as normal
-    return undefined;
   } catch (error) {
     console.log(error);
   }
-};
+}
