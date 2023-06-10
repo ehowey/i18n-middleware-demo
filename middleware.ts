@@ -18,11 +18,12 @@ export async function middleware(req: NextRequest) {
       .split("-")?.[0]
       .toLowerCase() || "en";
 
-  console.log({
-    country: country,
-    language: language,
-    cookieLocale: cookieLocale,
-  });
+  // Helpful console.log for debugging
+  // console.log({
+  //   country: country,
+  //   language: language,
+  //   cookieLocale: cookieLocale,
+  // });
 
   try {
     // Early return if we do not need to or want to run middleware
