@@ -9,14 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@radix-ui/react-popover": "^0.1.5",
-    "next": "12.1.0",
-    "react": "17.0.2",
-    "react-cookie-consent": "^7.3.1",
-    "react-dom": "17.0.2"
+    "@radix-ui/react-popover": "^1.0.6",
+    "next": "13.4.4",
+    "react": "18.2.0",
+    "react-cookie-consent": "^8.0.1",
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "eslint": "8.9.0",
-    "eslint-config-next": "12.1.0"
+    "@types/node": "^20.2.5",
+    "@types/react": "18.2.9",
+    "eslint": "8.42.0",
+    "eslint-config-next": "13.4.4",
+    "typescript": "5.1.3"
   }
 }
